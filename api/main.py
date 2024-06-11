@@ -1,75 +1,94 @@
 import tkinter as tk
-from tkinter import ttk
-from matplotlib.figure import Figure
+from tkinter import messagebox
+import cmath
+import numpy as np
+import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-from PIL import Image, ImageTk  # Ensure Pillow is installed
 
-# Create the main window
+def solve_quadratic():
+    try:
+        a = float(entry_a.get())
+        b = float(entry_b.get())
+        c = float(entry_c.get())
+
+        if a == 0:
+            messagebox.showerror("Input Error", "Coefficient 'a' cannot be zero.")
+            return
+
+        # Calculate the discriminant
+        discriminant = b**2 - 4*a*c
+
+        # Find two solutions
+        if discriminant > 0:
+            root1 = (-b + cmath.sqrt(discriminant)) / (2 * a)
+            root2 = (-b - cmath.sqrt(discriminant)) / (2 * a)
+            result = f"Two distinct real roots: {root1.real:.2f} and {root2.real:.2f}"
+        elif discriminant == 0:
+            root = -b / (2 * a)
+            result = f"One real root: {root:.2f}"
+        else:
+            root1 = (-b + cmath.sqrt(discriminant)) / (2 * a)
+            root2 = (-b - cmath.sqrt(discriminant)) / (2 * a)
+            result = f"Two complex roots: {root1} and {root2}"
+
+        label_result.config(text=result)
+        plot_quadratic(a, b, c)
+    except ValueError:
+        messagebox.showerror("Input Error", "Please enter valid numbers.")
+
+def plot_quadratic(a, b, c):
+    # Clear previous plots
+    for widget in plot_frame.winfo_children():
+        widget.destroy()
+
+    # Generate x values
+    x = np.linspace(-10, 10, 400)
+    y = a * x**2 + b * x + c
+
+    # Create the plot
+    fig, ax = plt.subplots(figsize=(8, 6))
+    ax.plot(x, y, label=f'{a}x² + {b}x + {c}')
+    ax.axhline(0, color='black',linewidth=0.5)
+    ax.axvline(0, color='black',linewidth=0.5)
+    ax.grid(color = 'gray', linestyle = '--', linewidth = 0.5)
+    ax.set_title('Quadratic Function Plot')
+    ax.set_xlabel('x')
+    ax.set_ylabel('f(x)')
+    ax.legend()
+
+    # Embed the plot in the tkinter window
+    canvas = FigureCanvasTkAgg(fig, master=plot_frame)
+    canvas.draw()
+    canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
+
+# Setup the main window
 root = tk.Tk()
-root.title("GUI Example")
-root.geometry("800x600")
-root.configure(bg='black')
+root.title("Quadratic Equation Solver")
 
-# Create a menu bar
-menubar = tk.Menu(root)
-root.config(menu=menubar)
+# Coefficient inputs
+tk.Label(root, text="a:").grid(row=0, column=0, padx=5, pady=5)
+entry_a = tk.Entry(root)
+entry_a.grid(row=0, column=1, padx=5, pady=5)
 
-# Add menu items
-file_menu = tk.Menu(menubar, tearoff=0)
-menubar.add_cascade(label="Main", menu=file_menu)
-file_menu.add_command(label="LS")
-file_menu.add_command(label="FFT")
-file_menu.add_command(label="Wavelet")
-file_menu.add_command(label="Diagram")
+tk.Label(root, text="b:").grid(row=1, column=0, padx=5, pady=5)
+entry_b = tk.Entry(root)
+entry_b.grid(row=1, column=1, padx=5, pady=5)
 
-# Create a frame for the search bar and table
-frame = tk.Frame(root, bg='black')
-frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
+tk.Label(root, text="c:").grid(row=2, column=0, padx=5, pady=5)
+entry_c = tk.Entry(root)
+entry_c.grid(row=2, column=1, padx=5, pady=5)
 
-# Create the search bar
-search_label = tk.Label(frame, text="id", bg='black', fg='white')
-search_label.grid(row=0, column=0, padx=5, pady=5, sticky='w')
+# Solve button
+btn_solve = tk.Button(root, text="Solve", command=solve_quadratic)
+btn_solve.grid(row=3, column=0, columnspan=2, pady=10)
 
-search_entry = tk.Entry(frame)
-search_entry.grid(row=0, column=1, padx=5, pady=5, sticky='w')
+# Result display
+label_result = tk.Label(root, text="", font=("Helvetica", 12))
+label_result.grid(row=4, column=0, columnspan=2, pady=10)
 
-search_button = tk.Button(frame, text="Search", bg='orange')
-search_button.grid(row=0, column=2, padx=5, pady=5, sticky='w')
+# Frame for plotting
+plot_frame = tk.Frame(root)
+plot_frame.grid(row=5, column=0, columnspan=2, pady=10)
 
-sec_label = tk.Label(frame, text="Sec", bg='black', fg='white')
-sec_label.grid(row=0, column=3, padx=5, pady=5, sticky='w')
-
-# Create a Treeview widget for the table
-tree = ttk.Treeview(frame, columns=("ID", "Sector"), show='headings', height=10)
-tree.heading("ID", text="ID")
-tree.heading("Sector", text="Sector")
-
-tree.grid(row=1, column=0, columnspan=4, padx=5, pady=5, sticky='nsew')
-
-# Add sample data
-tree.insert("", "end", values=("123", "25"))
-
-# Configure column weights
-frame.columnconfigure(1, weight=1)
-frame.columnconfigure(2, weight=1)
-frame.columnconfigure(3, weight=1)
-frame.rowconfigure(1, weight=1)
-
-# Create a frame for the plot
-plot_frame = tk.Frame(root, bg='black')
-plot_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
-
-# Create a sample plot
-fig = Figure(figsize=(5, 4), dpi=100)
-t = [0.1 * i for i in range(100)]
-y = [i ** 2 for i in t]
-plot = fig.add_subplot(111)
-plot.plot(t, y)
-
-# Embed the plot in the Tkinter GUI
-canvas = FigureCanvasTkAgg(fig, master=plot_frame)
-canvas.draw()
-canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
-
-# Start the main event loop
+# Start the Tkinter event loop
 root.mainloop()

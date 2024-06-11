@@ -2,12 +2,15 @@ import { HelpCircle, Orbit, User, User2 } from "lucide-react";
 import { Separator } from "./ui/separator";
 import { NavLink } from "./nav-link";
 import Image from "next/image";
+import Link from "next/link";
 
 export function Header() {
   return (
     <header className="bg-secondary">
       <div className="flex items-center px-6 py-5 gap-4">
-        <Image src="/pymaps.png" alt="logo" width={120} height={120} />
+        <Link href="/" >
+          <Image src="/pymaps.png" alt="logo" width={120} height={120} />
+        </Link>
 
         <Separator orientation="vertical" className="h-6 bg-muted-foreground" />
 
